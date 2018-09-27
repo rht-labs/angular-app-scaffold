@@ -124,9 +124,16 @@ pipeline {
             post {
                 always {
                     archive "**"
-                    junit 'test-report.xml'
+                    junit './reports/unit/results.xml'
                     // publish html
-
+                    publishHTML target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'reports/coverage',
+                        reportFiles: 'index.html',
+                        reportName: 'FE Code Coverage'
+                    ]
                     // Notify slack or some such
                 }
                 success {
