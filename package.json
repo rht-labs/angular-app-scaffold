@@ -12,9 +12,9 @@
     "e2e": "ng e2e",
     "clean": "rm -rf reports dist package-contents*",
     "package": "zip -r package-contents.zip package-contents",
-    "prepare-nexus": "curl -X POST  -u admin:admin123 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @nexus.json http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/service/siesta/rest/v1/script && curl -X POST  -u admin:admin123 -H 'Content-Type: text/plain' -H 'Accept: application/json' http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/service/siesta/rest/v1/script/zip/run",
-    "publish": "curl -vvv -u admin:admin123 --upload-file package-contents.zip http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/zip/com/redhat/todolist/${JOB_NAME}.${BUILD_NUMBER}/package-contents.zip",
-    "publish:get": "curl -vvv http://admin:admin123@${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/zip/com/redhat/todolist/${BUILD_TAG}/package-contents.zip -o package-contents.zip"
+    "prepare-nexus": "curl -X POST  -u ${NEXUS_CREDS} -H 'Content-Type: application/json' -H 'Accept: application/json' -d @nexus.json http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/service/siesta/rest/v1/script && curl -X POST  -u ${NEXUS_CREDS} -H 'Content-Type: text/plain' -H 'Accept: application/json' http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/service/siesta/rest/v1/script/zip/run",
+    "publish": "curl -vvv -u ${NEXUS_CREDS} --upload-file package-contents.zip http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/zip/com/redhat/fe/${JOB_NAME}.${BUILD_NUMBER}/package-contents.zip",
+    "publish:get": "curl -vvv http://${NEXUS_CREDS}@${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/zip/com/redhat/fe/${BUILD_TAG}/package-contents.zip -o package-contents.zip"
   },
   "private": true,
   "dependencies": {

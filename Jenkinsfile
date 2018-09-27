@@ -15,6 +15,8 @@ pipeline {
 
         GIT_SSL_NO_VERIFY = true
         GIT_CREDENTIALS = credentials('jenkins-git-creds')
+        NEXUS_CREDS = credentials('labs-ci-cd-nexus-password')
+
         // GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
         GITLAB_PROJECT = "labs"
     }
@@ -64,32 +66,32 @@ pipeline {
                 }
             }
         }
-        // stage("Apply cluster configs") {
-        //     agent {
-        //         node {
-        //             label "jenkins-slave-ansible"  
-        //         }
-        //     }
-        //     when {
-        //         expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
-        //     }
-        //     steps {
-        //         echo '### Apply cluster configs ###'
-        //         sh  '''
-        //                 printenv
-        //             '''
-        //         sh  '''
-        //                 cd .openshift-applier
-        //                 ansible-galaxy install -r requirements.yml --roles-path=roles
-        //                 ansible-playbook apply.yml -e target=app -i inventory/
-        //             '''
-        //     }
-        //     post {
-        //         always {
-        //             archive "**"
-        //         }
-        //     }
-        // }
+        stage("Apply cluster configs") {
+            agent {
+                node {
+                    label "jenkins-slave-ansible"  
+                }
+            }
+            when {
+                expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
+            }
+            steps {
+                echo '### Apply cluster configs ###'
+                sh  '''
+                        printenv
+                    '''
+                sh  '''
+                        cd .openshift-applier
+                        ansible-galaxy install -r requirements.yml --roles-path=roles
+                        ansible-playbook apply.yml -e target=app -i inventory/
+                    '''
+            }
+            post {
+                always {
+                    archive "**"
+                }
+            }
+        }
         stage("node-build") {
             agent {
                 node {
@@ -162,7 +164,7 @@ pipeline {
                 echo '### Get Binary from Nexus ###'
                 sh  '''
                         rm -rf package-contents*
-                        curl -v -f http://admin:admin123@${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/zip/com/redhat/tie/${JENKINS_TAG}/package-contents.zip -o package-contents.zip
+                        curl -v -f http://${NEXUS_CREDS}@${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/zip/com/redhat/fe/${JENKINS_TAG}/package-contents.zip -o package-contents.zip
                         unzip package-contents.zip
                     '''
                 echo '### Create Linux Container Image from package ###'
