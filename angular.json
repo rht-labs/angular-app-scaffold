@@ -11,7 +11,7 @@
       "schematics": {},
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/jest:run",
           "options": {
             "outputPath": "dist/tie-fe",
             "index": "src/index.html",

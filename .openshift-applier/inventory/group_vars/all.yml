@@ -1,0 +1,35 @@
+---
+template_params:
+  PIPELINES_NAMESPACE: "{{ ci_cd_namespace }}"
+  NAME: tie-fe
+  DEPLOYER_USER: jenkins
+  APP_TAG: latest
+  BUILD_TAG: latest
+  NAMESPACE: "{{ ci_cd_namespace }}"
+openshift_cluster_content:
+- object: app-builds
+  content:
+  - name: tie-fe-build
+    template: "{{ playbook_dir }}/templates/build.yml"
+    params_from_vars: "{{ template_params }}"
+    namespace: "{{ ci_cd_namespace }}"
+    tags:
+    - build
+- object: deploy-dev
+  content:
+  - name:  tie-fe
+    template: "{{ playbook_dir }}/templates/deploy.yml"
+    params_from_vars: "{{ template_params }}"
+    namespace: "{{ dev_namespace }}"
+    tags:
+    - deploy
+    - dev
+- object: deploy-test
+  content:
+  - name:  tie-fe
+    template: "{{ playbook_dir }}/templates/deploy.yml"
+    params_from_vars: "{{ template_params }}"
+    namespace: "{{ test_namespace }}"
+    tags:
+    - deploy
+    - test
