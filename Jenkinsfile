@@ -64,32 +64,32 @@ pipeline {
                 }
             }
         }
-        stage("Apply cluster configs") {
-            agent {
-                node {
-                    label "jenkins-slave-ansible"  
-                }
-            }
-            when {
-                expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
-            }
-            steps {
-                echo '### Apply cluster configs ###'
-                sh  '''
-                        printenv
-                    '''
-                sh  '''
-                        cd .openshift-applier
-                        ansible-galaxy install -r requirements.yml --roles-path=roles
-                        ansible-playbook apply.yml -e target=app -i inventory/
-                    '''
-            }
-            post {
-                always {
-                    archive "**"
-                }
-            }
-        }
+        // stage("Apply cluster configs") {
+        //     agent {
+        //         node {
+        //             label "jenkins-slave-ansible"  
+        //         }
+        //     }
+        //     when {
+        //         expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
+        //     }
+        //     steps {
+        //         echo '### Apply cluster configs ###'
+        //         sh  '''
+        //                 printenv
+        //             '''
+        //         sh  '''
+        //                 cd .openshift-applier
+        //                 ansible-galaxy install -r requirements.yml --roles-path=roles
+        //                 ansible-playbook apply.yml -e target=app -i inventory/
+        //             '''
+        //     }
+        //     post {
+        //         always {
+        //             archive "**"
+        //         }
+        //     }
+        // }
         stage("node-build") {
             agent {
                 node {
