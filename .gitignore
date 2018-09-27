@@ -5,6 +5,7 @@
 /tmp
 /out-tsc
 /reports
+junit.xml
 
 # dependencies
 /node_modules

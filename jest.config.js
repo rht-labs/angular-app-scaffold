@@ -8,5 +8,6 @@ module.exports = {
     coverageReporters: [
       "text",
       "html"
-    ]
+    ],
+    reporters: [ "default", [ "jest-junit", { suiteName: "jest tests" } ] ]
   };
