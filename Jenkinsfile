@@ -88,7 +88,7 @@ pipeline {
         //     }
         //     post {
         //         always {
-        //             archive "**"
+        //             archiveArtifacts "**"
         //         }
         //     }
         // }
@@ -181,7 +181,7 @@ pipeline {
             }
             post {
                 always {
-                    archive "**"
+                    archiveArtifacts "**"
                 }
             }
         }
@@ -236,8 +236,16 @@ pipeline {
             }
             post {
                 always {
-                    junit 'reports/e2e/specs/*.xml'
-                }
+                    junit 'reports/e2e/results.xml'
+                    // publish html
+                    publishHTML target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'reports/e2e',
+                        reportFiles: 'e2e-test-report.html',
+                        reportName: 'FE Code Coverage'
+                    ]                }
             }
         }
     }
