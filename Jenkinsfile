@@ -141,8 +141,10 @@ pipeline {
                 success {
                     echo "Git tagging"
                     sh'''
+                        git config --global user.email "jenkins@example.com"
+                        git config --global user.name "jenkins-ci"
                         git tag -a ${JENKINS_TAG} -m "JENKINS automated commit"
-                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@${GITLAB_DOMAIN}/${GITLAB_PROJECT}/${APP_NAME}.git --tags
+                        # git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@${GITLAB_DOMAIN}/${GITLAB_PROJECT}/${APP_NAME}.git --tags
                     '''
                 }
                 failure {
