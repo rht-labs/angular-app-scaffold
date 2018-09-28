@@ -6,6 +6,7 @@
 /out-tsc
 /reports
 junit.xml
+package-contents*
 
 # dependencies
 /node_modules

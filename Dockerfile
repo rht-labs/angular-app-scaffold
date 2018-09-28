@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/rhscl/nodejs-6-rhel7
+FROM registry.access.redhat.com/rhscl/nodejs-8-rhel7
 
 WORKDIR /usr/src/app
 
@@ -12,7 +12,7 @@ RUN chown -R "1001" "${FIX_DIR}" && \
 
 USER 1001
 
-RUN scl enable rh-nodejs6 'npm install http-server'
+RUN scl enable rh-nodejs8 'npm install http-server'
 
 COPY dist /usr/src/app
 

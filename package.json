@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve --open",
     "build": "ng build",
+    "build:ci": "ng build --output-path dist --prod",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:ci": "export JEST_JUNIT_OUTPUT='./reports/unit/results.xml' && jest --coverage --coverageDirectory=reports/coverage/",

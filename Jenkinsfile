@@ -107,6 +107,9 @@ pipeline {
                 echo '### Install deps ###'
                 sh 'npm install'
 
+                echo '### Install deps ###'
+                sh 'npm run clean'
+                
                 echo '### Running tests ###'
                 sh 'npm run lint'
 
@@ -115,7 +118,7 @@ pipeline {
 
                 echo '### Running build ###'
                 // sh 'npm run build:ci:${NODE_ENV}'
-                sh 'npm run build'
+                sh 'npm run build:ci'
 
                 echo '### Packaging App for Nexus ###'
                 sh 'npm run package'
