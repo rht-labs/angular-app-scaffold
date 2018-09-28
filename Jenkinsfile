@@ -125,8 +125,8 @@ pipeline {
             // Post can be used both on individual stages and for the entire build.
             post {
                 always {
-                    archive "**"
-                    junit './reports/unit/results.xml'
+                    archiveArtifacts "**"
+                    junit 'reports/unit/results.xml'
                     // publish html
                     publishHTML target: [
                         allowMissing: false,
