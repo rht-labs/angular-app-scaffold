@@ -164,7 +164,7 @@ pipeline {
                 echo '### Get Binary from Nexus ###'
                 sh  '''
                         rm -rf package-contents*
-                        curl -v -f http://${NEXUS_CREDS}@${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/zip/com/redhat/fe/${JENKINS_TAG}/package-contents.zip -o package-contents.zip
+                        curl -v -f http://${NEXUS_CREDS}@${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/repository/labs-static/com/redhat/fe/${JENKINS_TAG}/package-contents.zip -o package-contents.zip
                         unzip package-contents.zip
                     '''
                 echo '### Create Linux Container Image from package ###'
