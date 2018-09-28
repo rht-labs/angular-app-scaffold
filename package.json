@@ -11,7 +11,7 @@
     "test:ci": "export JEST_JUNIT_OUTPUT='./reports/unit/results.xml' && jest --coverage --coverageDirectory=reports/coverage/",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "e2e:ci": "ng e2e --base-url ${E2E_TEST_ROUTE} --protractor-config e2e/protractor.conf.ci.js  --dev-server-target=",
+    "e2e:ci": "ng e2e --base-url http://${E2E_TEST_ROUTE}/ --protractor-config e2e/protractor.conf.ci.js  --dev-server-target=",
     "clean": "rm -rf reports dist package-contents*",
     "package": "mkdir -p package-contents && cp -vr dist Dockerfile package-contents && zip -r package-contents.zip package-contents",
     "prepare-nexus": "curl -X POST  -u ${NEXUS_CREDS} -H 'Content-Type: application/json' -H 'Accept: application/json' -d @nexus.json http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/service/siesta/rest/v1/script && curl -X POST  -u ${NEXUS_CREDS} -H 'Content-Type: text/plain' -H 'Accept: application/json' http://${NEXUS_SERVICE_HOST}:${NEXUS_SERVICE_PORT}/service/siesta/rest/v1/script/labs-static/run",
