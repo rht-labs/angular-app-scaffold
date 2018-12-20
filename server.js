@@ -33,7 +33,7 @@ app.use(function (req, res, next) {
 
 
 // Health Check route
-app.get('/api/actuator/health', (req, res) => res.send('Hello World!'));
+app.get('/api/health', (req, res) => res.send({OK:true}));
 
 
 // Support Article Drafts
@@ -61,7 +61,7 @@ app.post('/api/v1/thing', (req, res) => {
 // My items
 app.get('/api/v1/thing', (req, res) => {
   // default
-  const data =  dummy.find({}).concat( dummy.find({}));
+  const data =  dummy.find({});
   resp.totalCount = data.length;
   const maxNbrOfDrafts = Number(req.query.maxNbrOfDrafts) || 10;
   const requestedPage = Number(req.query.pageNbr) || 0;
