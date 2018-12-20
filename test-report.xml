@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testExecutions version="1">
+  <file path="/Users/donal/Documents/education/angular6-learning/angular7-scaffold/src/app/app.component.spec.ts">
+    <testCase name="AppComponent should create the app" duration="99"/>
+    <testCase name="AppComponent should have as title &apos;angular-fe&apos;" duration="34"/>
+    <testCase name="AppComponent should render title in a h1 tag" duration="40"/>
+  </file>
+</testExecutions>

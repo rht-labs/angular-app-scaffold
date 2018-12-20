@@ -1,7 +1,7 @@
 ---
 template_params:
   PIPELINES_NAMESPACE: "{{ ci_cd_namespace }}"
-  NAME: tie-fe
+  NAME: angular-fe
   DEPLOYER_USER: jenkins
   APP_TAG: latest
   BUILD_TAG: latest
@@ -9,7 +9,7 @@ template_params:
 openshift_cluster_content:
 - object: app-builds
   content:
-  - name: tie-fe-build
+  - name: angular-fe-build
     template: "{{ playbook_dir }}/templates/build.yml"
     params_from_vars: "{{ template_params }}"
     namespace: "{{ ci_cd_namespace }}"
@@ -17,7 +17,7 @@ openshift_cluster_content:
     - build
 - object: deploy-dev
   content:
-  - name:  tie-fe
+  - name:  angular-fe
     template: "{{ playbook_dir }}/templates/deploy.yml"
     params_from_vars: "{{ template_params }}"
     namespace: "{{ dev_namespace }}"
@@ -26,7 +26,7 @@ openshift_cluster_content:
     - dev
 - object: deploy-test
   content:
-  - name:  tie-fe
+  - name:  angular-fe
     template: "{{ playbook_dir }}/templates/deploy.yml"
     params_from_vars: "{{ template_params }}"
     namespace: "{{ test_namespace }}"

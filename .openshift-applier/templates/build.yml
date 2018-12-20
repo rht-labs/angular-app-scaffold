@@ -2,7 +2,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: tie-fe-build
+  name: angular-fe-build
   annotations:
     openshift.io/display-name: S2I App Build Template
     description: S2I binary build config to create an image with your app baked in.
@@ -51,4 +51,4 @@ parameters:
   required: true
   value: latest
 labels:
-  template: tie-fe-build-template
+  template: angular-fe-build-template

@@ -8,7 +8,7 @@ pipeline {
     environment {
         // GLobal Vars
         PIPELINES_NAMESPACE = "labs-ci-cd"
-        APP_NAME = "tie-fe"
+        APP_NAME = "angular-fe"
 
         JENKINS_TAG = "${JOB_NAME}.${BUILD_NUMBER}".replace("/", "-")
         JOB_NAME = "${JOB_NAME}".replace("/", "-")
@@ -19,11 +19,12 @@ pipeline {
 
         // GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
         GITLAB_PROJECT = "labs"
+        SONAR_SCANNER_HOME = tool "sonar-scanner-tool"
     }
 
     // The options directive is for configuration that applies to the whole job.
     options {
-        buildDiscarder(logRotator(numToKeepStr:'10'))
+        buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2'))
         timeout(time: 15, unit: 'MINUTES')
         ansiColor('xterm')
         timestamps()
@@ -66,32 +67,29 @@ pipeline {
                 }
             }
         }
-        // stage("Apply cluster configs") {
-        //     agent {
-        //         node {
-        //             label "jenkins-slave-ansible"  
-        //         }
-        //     }
-        //     when {
-        //         expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
-        //     }
-        //     steps {
-        //         echo '### Apply cluster configs ###'
-        //         sh  '''
-        //                 printenv
-        //             '''
-        //         sh  '''
-        //                 cd .openshift-applier
-        //                 ansible-galaxy install -r requirements.yml --roles-path=roles
-        //                 ansible-playbook apply.yml -e target=app -i inventory/
-        //             '''
-        //     }
-        //     post {
-        //         always {
-        //             archiveArtifacts "**"
-        //         }
-        //     }
-        // }
+        stage("Apply cluster configs") {
+            agent {
+                node {
+                    label "jenkins-slave-ansible"  
+                }
+            }
+            steps {
+                echo '### Apply cluster configs ###'
+                sh  '''
+                        printenv
+                    '''
+                sh  '''
+                        cd .openshift-applier
+                        ansible-galaxy install -r requirements.yml --roles-path=roles
+                        ansible-playbook apply.yml -e target=app -i inventory/
+                    '''
+            }
+            post {
+                always {
+                    archiveArtifacts "**"
+                }
+            }
+        }
         stage("node-build") {
             agent {
                 node {
@@ -101,7 +99,7 @@ pipeline {
             steps {
                 // git branch: 'develop',
                 //     credentialsId: 'jenkins-git-creds',
-                //     url: 'https://gitlab-labs-ci-cd.apps.somedomain.com/labs/tie-fe.git'
+                //     url: 'https://gitlab-labs-ci-cd.apps.somedomain.com/labs/angular-fe.git'
                 sh 'printenv'
 
                 echo '### Install deps ###'
@@ -110,16 +108,52 @@ pipeline {
                 echo '### Install deps ###'
                 sh 'npm run clean'
                 
-                echo '### Running tests ###'
+                echo '### Running linter ###'
                 sh 'npm run lint'
 
                 echo '### Running tests ###'
                 sh 'npm run test:ci'
 
+                echo '### Running sonar scanner ###'
+                script {
+                    def scannerHome = tool 'sonar-scanner-tool';
+                    withSonarQubeEnv('sonar') {
+                        sh "${scannerHome}/bin/sonar-runner"
+                     }
+                 }
                 echo '### Running build ###'
-                // sh 'npm run build:ci:${NODE_ENV}'
-                sh 'npm run build:ci'
+                sh '''
+                    if [ -z "${NODE_ENV}" ];then
+                    npm run build
+                    else
+                    npm run build:${NODE_ENV}
+                    fi
+                '''
 
+                echo '### Running pact tests ###'
+                sh 'npm run pact:test'
+                sh '''
+                    if [ -z "${NODE_ENV}" ];then
+                    echo "We are in feature branch, not publishing Pact contract"
+                    else
+                    npm run pact:publish
+                    fi
+                '''
+                echo '### Checking of Pact Broker returns deployable for our versions ###'
+                script {
+                    try {
+                        sh '''
+                            if [ -z "${NODE_ENV}" ];then
+                            echo "We are in feature branch, not verifying Pact contract"
+                            else
+                            npm run pact:verify
+                            fi
+                        '''
+                    } catch (exc) {
+                        echo 'Pact Contract not verified!'
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
                 echo '### Packaging App for Nexus ###'
                 sh 'npm run package'
                 sh 'npm run publish'
@@ -129,13 +163,13 @@ pipeline {
             post {
                 always {
                     archiveArtifacts "**"
-                    junit 'reports/unit/results.xml'
+                    junit 'reports/unit/junit-report.xml'
                     // publish html
                     publishHTML target: [
                         allowMissing: false,
                         alwaysLinkToLastBuild: false,
                         keepAll: true,
-                        reportDir: 'reports/coverage',
+                        reportDir: 'reports/coverage/lcov-report',
                         reportFiles: 'index.html',
                         reportName: 'FE Code Coverage'
                     ]
@@ -155,7 +189,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage("node-bake") {
             agent {
                 node {
@@ -223,19 +257,22 @@ pipeline {
                 }
             }
             when {
-                expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
+               // expression { GIT_BRANCH ==~ /(.*develop)/ }
+                expression { GIT_BRANCH ==~ /(.*bugfix-e2e)/ }
             }
             steps {
-              unstash 'source'
-
               echo '### Install deps ###'
               sh 'npm install'
+
+              echo '### Seed the api ###'
+              sh './seed-backend.sh'
 
               echo '### Running end to end tests ###'
               sh 'npm run e2e:ci'
             }
             post {
                 always {
+                    archiveArtifacts "**"
                     junit 'reports/e2e/results.xml'
                     // publish html
                     publishHTML target: [
@@ -244,8 +281,9 @@ pipeline {
                         keepAll: true,
                         reportDir: 'reports/e2e',
                         reportFiles: 'e2e-test-report.html',
-                        reportName: 'FE Code Coverage'
-                    ]                }
+                        reportName: 'E2E Test Report'
+                    ]                
+                }
             }
         }
     }

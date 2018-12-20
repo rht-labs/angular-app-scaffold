@@ -2,7 +2,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: tie-fe-deploy
+  name: angular-fe-deploy
   annotations:
     openshift.io/display-name: Static react js App Deploy Template
     description: A template to deploy your an App with a HTTP endpoint
@@ -127,4 +127,4 @@ parameters:
   description: The project/namespace where the Jenkins executing pipelines is deployed.
   required: true
 labels:
-  template: tie-fe-deploy-template
+  template: angular-fe-deploy-template
