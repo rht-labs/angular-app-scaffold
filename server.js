@@ -83,7 +83,7 @@ app.post('/api/v1/dummy', (req, res) => {
 
 // Start Server
 console.log("In memory DB seeded with ", dummy.find({}));
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+let server = app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 
 //Return token with very long expiration
@@ -99,7 +99,7 @@ app.post('/api/v1/authenticateUser', (req, res) => {
 
 
 function forceShutDown() {
-  app.close(() => {
+  server.close(() => {
     process.exit(0);
   });
 
