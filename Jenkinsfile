@@ -24,7 +24,7 @@ pipeline {
 
     // The options directive is for configuration that applies to the whole job.
     options {
-        buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '2'))
+        buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '1'))
         timeout(time: 15, unit: 'MINUTES')
         ansiColor('xterm')
         timestamps()
@@ -70,8 +70,11 @@ pipeline {
         stage("Apply cluster configs") {
             agent {
                 node {
-                    label "jenkins-slave-ansible"  
+                    label "jenkins-slave-ansible"
                 }
+            }
+            when {
+              expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
             }
             steps {
                 echo '### Apply cluster configs ###'
@@ -84,16 +87,11 @@ pipeline {
                         ansible-playbook apply.yml -e target=app -i inventory/
                     '''
             }
-            post {
-                always {
-                    archiveArtifacts "**"
-                }
-            }
         }
         stage("node-build") {
             agent {
                 node {
-                    label "jenkins-slave-npm"  
+                    label "jenkins-slave-npm"
                 }
             }
             steps {
@@ -107,12 +105,13 @@ pipeline {
 
                 echo '### Install deps ###'
                 sh 'npm run clean'
-                
+
                 echo '### Running linter ###'
                 sh 'npm run lint'
 
                 echo '### Running tests ###'
                 sh 'npm run test:ci'
+                sh 'npm run e2e:ci'
 
                 echo '### Running sonar scanner ###'
                 script {
@@ -123,37 +122,33 @@ pipeline {
                  }
                 echo '### Running build ###'
                 sh '''
-                    if [ -z "${NODE_ENV}" ];then
                     npm run build
-                    else
-                    npm run build:${NODE_ENV}
-                    fi
                 '''
 
-                echo '### Running pact tests ###'
-                sh 'npm run pact:test'
-                sh '''
-                    if [ -z "${NODE_ENV}" ];then
-                    echo "We are in feature branch, not publishing Pact contract"
-                    else
-                    npm run pact:publish
-                    fi
-                '''
-                echo '### Checking of Pact Broker returns deployable for our versions ###'
-                script {
-                    try {
-                        sh '''
-                            if [ -z "${NODE_ENV}" ];then
-                            echo "We are in feature branch, not verifying Pact contract"
-                            else
-                            npm run pact:verify
-                            fi
-                        '''
-                    } catch (exc) {
-                        echo 'Pact Contract not verified!'
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
+                // echo '### Running pact tests ###'
+                // sh 'npm run pact:test'
+                // sh '''
+                //     if [ -z "${NODE_ENV}" ];then
+                //     echo "We are in feature branch, not publishing Pact contract"
+                //     else
+                //     npm run pact:publish
+                //     fi
+                // '''
+                // echo '### Checking of Pact Broker returns deployable for our versions ###'
+                // script {
+                //     try {
+                //         sh '''
+                //             if [ -z "${NODE_ENV}" ];then
+                //             echo "We are in feature branch, not verifying Pact contract"
+                //             else
+                //             npm run pact:verify
+                //             fi
+                //         '''
+                //     } catch (exc) {
+                //         echo 'Pact Contract not verified!'
+                //         currentBuild.result = 'UNSTABLE'
+                //     }
+                // }
                 echo '### Packaging App for Nexus ###'
                 sh 'npm run package'
                 sh 'npm run publish'
@@ -173,6 +168,15 @@ pipeline {
                         reportFiles: 'index.html',
                         reportName: 'FE Code Coverage'
                     ]
+                    junit 'reports/e2e/*.xml'
+                    publishHTML target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'reports/e2e',
+                        reportFiles: 'chrome-*.html,firefox-*.html',
+                        reportName: 'E2E Test Reports'
+                    ]
                     // Notify slack or some such
                 }
                 success {
@@ -181,19 +185,16 @@ pipeline {
                         git config --global user.email "jenkins@example.com"
                         git config --global user.name "jenkins-ci"
                         git tag -a ${JENKINS_TAG} -m "JENKINS automated commit"
-                        # git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@${GITLAB_DOMAIN}/${GITLAB_PROJECT}/${APP_NAME}.git --tags
+                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@${GITLAB_DOMAIN}/${GITLAB_PROJECT}/${APP_NAME}.git --tags
                     '''
-                }
-                failure {
-                    echo "FAILURE"
                 }
             }
         }
-        
+
         stage("node-bake") {
             agent {
                 node {
-                    label "master"  
+                    label "master"
                 }
             }
             when {
@@ -213,17 +214,12 @@ pipeline {
                         oc start-build ${APP_NAME} --from-dir=package-contents/ --follow
                     '''
             }
-            post {
-                always {
-                    archiveArtifacts "**"
-                }
-            }
         }
 
         stage("node-deploy") {
             agent {
                 node {
-                    label "master"  
+                    label "master"
                 }
             }
             when {
@@ -241,50 +237,24 @@ pipeline {
                     oc rollout latest dc/${APP_NAME}
                 '''
                 echo '### Verify OCP Deployment ###'
-                openshiftVerifyDeployment depCfg: env.APP_NAME, 
-                    namespace: env.PROJECT_NAMESPACE, 
-                    replicaCount: '1', 
-                    verbose: 'false', 
-                    verifyReplicaCount: 'true', 
+                openshiftVerifyDeployment depCfg: env.APP_NAME,
+                    namespace: env.PROJECT_NAMESPACE,
+                    replicaCount: '1',
+                    verbose: 'false',
+                    verifyReplicaCount: 'true',
                     waitTime: '',
                     waitUnit: 'sec'
             }
-        }
-        stage("e2e test") {
-            agent {
-                node {
-                    label "jenkins-slave-npm"
-                }
-            }
-            when {
-               // expression { GIT_BRANCH ==~ /(.*develop)/ }
-                expression { GIT_BRANCH ==~ /(.*bugfix-e2e)/ }
-            }
-            steps {
-              echo '### Install deps ###'
-              sh 'npm install'
-
-              echo '### Seed the api ###'
-              sh './seed-backend.sh'
-
-              echo '### Running end to end tests ###'
-              sh 'npm run e2e:ci'
-            }
             post {
-                always {
-                    archiveArtifacts "**"
-                    junit 'reports/e2e/results.xml'
-                    // publish html
-                    publishHTML target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: false,
-                        keepAll: true,
-                        reportDir: 'reports/e2e',
-                        reportFiles: 'e2e-test-report.html',
-                        reportName: 'E2E Test Report'
-                    ]                
+                success {
+                    build job: 'system-test', parameters: [[$class: 'StringParameterValue', name: 'PROJECT_NAMESPACE', value: "${PROJECT_NAMESPACE}" ],[$class: 'StringParameterValue', name: 'JENKINS_TAG', value: "${JENKINS_TAG}"]], wait: false
                 }
             }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts "**"
         }
     }
 }
