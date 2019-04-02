@@ -2,7 +2,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: angular-fe-deploy
+  name: ${NAME}-deploy
   annotations:
     openshift.io/display-name: Static react js App Deploy Template
     description: A template to deploy your an App with a HTTP endpoint
@@ -51,6 +51,9 @@ objects:
             protocol: TCP
           resources: {}
           terminationMessagePath: "/dev/termination-log"
+          volumeMounts:
+            - mountPath: /usr/src/app/env
+              name: app-config
           readinessProbe:
             httpGet:
               path: /
@@ -61,6 +64,14 @@ objects:
         restartPolicy: Always
         securityContext: {}
         terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            items:
+              - key: env
+                path: env.js
+            name: environment
+          name: app-config
     test: false
     triggers: []
 - apiVersion: v1
@@ -93,18 +104,6 @@ objects:
       name: "${NAME}"
       weight: 100
     wildcardPolicy: None
-- apiVersion: v1
-  kind: RoleBinding
-  metadata:
-    name: edit
-  roleRef:
-    name: edit
-  subjects:
-  - kind: ServiceAccount
-    name: jenkins
-    namespace: "${PIPELINES_NAMESPACE}"
-  userNames:
-  - system:serviceaccount:${PIPELINES_NAMESPACE}:${DEPLOYER_USER}
 parameters:
 - name: NAME
   displayName: Name
@@ -113,6 +112,7 @@ parameters:
 - name: APP_TAG
   displayName: App Tag
   description: The tag of the image to use eg latest.
+  value: latest
   required: true
 - name: NAMESPACE
   displayName: Docker image namespace
@@ -121,10 +121,11 @@ parameters:
 - name: DEPLOYER_USER
   displayName: Deployer User
   description: The name to the serviceaccount user for deploying apps eg jenkins
+  value: jenkins
   required: true
 - name: PIPELINES_NAMESPACE
   displayName: Project/Namespace for Jenkins Pipelines
   description: The project/namespace where the Jenkins executing pipelines is deployed.
   required: true
 labels:
-  template: angular-fe-deploy-template
+  template: ${NAME}-deploy-template

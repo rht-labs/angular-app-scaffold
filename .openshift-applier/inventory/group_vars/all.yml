@@ -1,35 +1,67 @@
 ---
-template_params:
-  PIPELINES_NAMESPACE: "{{ ci_cd_namespace }}"
-  NAME: angular-fe
-  DEPLOYER_USER: jenkins
-  APP_TAG: latest
-  BUILD_TAG: latest
-  NAMESPACE: "{{ ci_cd_namespace }}"
+# Globals
+
+app_name: 'angular-fe'
+
+build:
+  NAME: '{{ app_name }}'
+
+deploy:
+  dev:
+    PIPELINES_NAMESPACE: '{{ ci_cd_namespace }}'
+    NAME: '{{ app_name }}'
+    NAMESPACE: '{{ dev_namespace }}'
+    COMPANYNAME: '{{ company_name }}'
+  test:
+    PIPELINES_NAMESPACE: '{{ ci_cd_namespace }}'
+    NAME: '{{ app_name }}'
+    NAMESPACE: '{{ test_namespace }}'
+    COMPANYNAME: '{{ company_name }}'
+
 openshift_cluster_content:
-- object: app-builds
-  content:
-  - name: angular-fe-build
-    template: "{{ playbook_dir }}/templates/build.yml"
-    params_from_vars: "{{ template_params }}"
-    namespace: "{{ ci_cd_namespace }}"
-    tags:
-    - build
-- object: deploy-dev
-  content:
-  - name:  angular-fe
-    template: "{{ playbook_dir }}/templates/deploy.yml"
-    params_from_vars: "{{ template_params }}"
-    namespace: "{{ dev_namespace }}"
-    tags:
-    - deploy
-    - dev
-- object: deploy-test
-  content:
-  - name:  angular-fe
-    template: "{{ playbook_dir }}/templates/deploy.yml"
-    params_from_vars: "{{ template_params }}"
-    namespace: "{{ test_namespace }}"
-    tags:
-    - deploy
-    - test
+  - object: app-builds
+    content:
+      - name: '{{ app_name }}-build'
+        template: '{{ playbook_dir }}/templates/build.yml'
+        params_from_vars: '{{ build }}'
+        namespace: '{{ ci_cd_namespace }}'
+        tags:
+          - build
+
+  - object: deploy-dev
+    content:
+      - name: '{{ app_name }}-{{ dev_namespace }}-deploy'
+        template: '{{ playbook_dir }}/templates/deploy.yml'
+        params_from_vars: '{{ deploy.dev }}'
+        namespace: '{{ dev_namespace }}'
+        tags:
+          - deploy
+          - dev
+  - object: configmap-dev
+    content:
+      - name: environment-config
+        template: '{{ playbook_dir }}/templates/environment-config.yml'
+        params_from_vars: '{{ deploy.dev }}'
+        namespace: '{{ dev_namespace }}'
+        tags:
+          - configmap
+          - dev
+
+  - object: deploy-test
+    content:
+      - name: '{{ app_name }}-{{ test_namespace }}-deploy'
+        template: '{{ playbook_dir }}/templates/deploy.yml'
+        params_from_vars: '{{ deploy.test }}'
+        namespace: '{{ test_namespace }}'
+        tags:
+          - deploy
+          - test
+  - object: configmap-test
+    content:
+      - name: environment-config
+        template: '{{ playbook_dir }}/templates/environment-config.yml'
+        params_from_vars: '{{ deploy.test }}'
+        namespace: '{{ test_namespace }}'
+        tags:
+          - configmap
+          - test

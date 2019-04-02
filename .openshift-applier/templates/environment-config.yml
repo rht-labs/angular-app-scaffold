@@ -1,0 +1,38 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: hr-hubby-environment-config
+  annotations:
+    openshift.io/display-name: Environment Config Map Template
+    description: Config maps to inject the environment into our JS app.
+    iconClass: fa-cube
+    tags: configmap
+objects:
+  - apiVersion: v1
+    kind: ConfigMap
+    data:
+      env: |-
+        (function (window) {
+          window.__env = window.__env || {};
+
+          // API url
+          window.__env.apiUrl = 'http://example-api-${NAMESPACE}.apps.${COMPANYNAME}.emea-1.rht-labs.com/';
+
+
+          // Whether or not to enable debug mode
+          // Setting this to false will disable console output
+          window.__env.enableDebug = true;
+        }(this));
+    metadata:
+      name: environment
+      namespace: { NAMESPACE }
+parameters:
+  - name: NAMESPACE
+    displayName: Docker image namespace
+    description: The namespace of the image to use eg js-apps.
+    required: true
+  - name: COMPANYNAME
+    displayName: Company Name
+    description: The company name used within the cluster URL
+    required: true
