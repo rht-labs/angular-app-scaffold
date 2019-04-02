@@ -1,8 +1,6 @@
 # angular-fe
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.2.2.
-
-For an up to date Angular 7 version - swap to the angular7 git branch
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.1.4.
 
 ## Development server
 
