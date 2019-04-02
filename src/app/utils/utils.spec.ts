@@ -1,3 +1,4 @@
+import { AppComponent } from './../app.component';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Utils } from './utils';
@@ -12,10 +13,10 @@ describe('Utils', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [Utils],
-      declarations: [HomeComponent],
+      declarations: [AppComponent],
       imports: [
         RouterTestingModule.withRoutes([
-          { path: 'some/path', component: HomeComponent }
+          { path: 'some/path', component: AppComponent }
         ])
       ]
     });
