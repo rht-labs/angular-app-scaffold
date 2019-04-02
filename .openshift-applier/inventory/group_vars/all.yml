@@ -11,18 +11,18 @@ deploy:
     PIPELINES_NAMESPACE: '{{ ci_cd_namespace }}'
     NAME: '{{ app_name }}'
     NAMESPACE: '{{ dev_namespace }}'
-    COMPANYNAME: '{{ company_name }}'
+    CUSTOM_ENV: '{ apiUrl: "http://example-api-{{ dev_namespace }}.apps.{{ company_name }}.server.rht-labs.com"}'
   test:
     PIPELINES_NAMESPACE: '{{ ci_cd_namespace }}'
     NAME: '{{ app_name }}'
     NAMESPACE: '{{ test_namespace }}'
-    COMPANYNAME: '{{ company_name }}'
+    CUSTOM_ENV: '{ apiUrl: "http://example-api-{{ test_namespace }}.apps.{{ company_name }}.server.rht-labs.com"}'
 
 openshift_cluster_content:
   - object: app-builds
     content:
       - name: '{{ app_name }}-build'
-        template: '{{ playbook_dir }}/templates/build.yml'
+        template: 'https://raw.githubusercontent.com/rht-labs/openshift-templates/v1.3/app-build/js-app-binary-build.yml'
         params_from_vars: '{{ build }}'
         namespace: '{{ ci_cd_namespace }}'
         tags:
@@ -31,7 +31,7 @@ openshift_cluster_content:
   - object: deploy-dev
     content:
       - name: '{{ app_name }}-{{ dev_namespace }}-deploy'
-        template: '{{ playbook_dir }}/templates/deploy.yml'
+        template: 'https://raw.githubusercontent.com/rht-labs/openshift-templates/v1.3.2/app-deploy/js-app-deploy-with-configmap.yml'
         params_from_vars: '{{ deploy.dev }}'
         namespace: '{{ dev_namespace }}'
         tags:
@@ -40,7 +40,7 @@ openshift_cluster_content:
   - object: deploy-test
     content:
       - name: '{{ app_name }}-{{ test_namespace }}-deploy'
-        template: '{{ playbook_dir }}/templates/deploy.yml'
+        template: 'https://raw.githubusercontent.com/rht-labs/openshift-templates/v1.3.2/app-deploy/js-app-deploy-with-configmap.yml'
         params_from_vars: '{{ deploy.test }}'
         namespace: '{{ test_namespace }}'
         tags:
