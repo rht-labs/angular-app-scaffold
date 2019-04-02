@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Utils } from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-home',
@@ -8,7 +9,7 @@ import { Component, OnInit } from '@angular/core';
 export class HomeComponent implements OnInit {
   title = 'Angular 7';
 
-  constructor() {}
+  constructor(public utils: Utils) {}
 
   ngOnInit() {}
 }

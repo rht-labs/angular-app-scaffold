@@ -6,6 +6,7 @@
 /out-tsc
 /reports
 junit.xml
+test-report.xml
 package-contents*
 
 # dependencies
@@ -35,7 +36,6 @@ package-contents*
 npm-debug.log
 yarn-error.log
 testem.log
-test-report.xml
 /typings
 
 # System Files
