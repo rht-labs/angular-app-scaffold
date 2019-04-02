@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-  <file path="/Users/donal/Documents/education/angular6-learning/angular7-scaffold/src/app/app.component.spec.ts">
-    <testCase name="AppComponent should create the app" duration="99"/>
-    <testCase name="AppComponent should have as title &apos;angular-fe&apos;" duration="34"/>
-    <testCase name="AppComponent should render title in a h1 tag" duration="40"/>
+  <file path="/Users/tpage/Documents/internal/repos/angular6-jest-scaffold/src/app/modules/lazy/lazy-explanation/lazy-explanation.component.spec.ts">
+    <testCase name="LazyExplanationComponent should create" duration="90"/>
+  </file>
+  <file path="/Users/tpage/Documents/internal/repos/angular6-jest-scaffold/src/app/components/home/home.component.spec.ts">
+    <testCase name="HomeComponent should create" duration="104"/>
+    <testCase name="HomeComponent should render title in a h1 tag" duration="24"/>
+  </file>
+  <file path="/Users/tpage/Documents/internal/repos/angular6-jest-scaffold/src/app/modules/lazy/lazy.component.spec.ts">
+    <testCase name="LazyComponent should create" duration="105"/>
+  </file>
+  <file path="/Users/tpage/Documents/internal/repos/angular6-jest-scaffold/src/app/app.component.spec.ts">
+    <testCase name="AppComponent should create the app" duration="104"/>
+    <testCase name="AppComponent should have as title &apos;angular-fe&apos;" duration="24"/>
   </file>
 </testExecutions>
