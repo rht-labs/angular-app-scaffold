@@ -35,6 +35,7 @@ package-contents*
 npm-debug.log
 yarn-error.log
 testem.log
+test-report.xml
 /typings
 
 # System Files

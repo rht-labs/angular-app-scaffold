@@ -4,7 +4,7 @@ apiVersion: v1
 metadata:
   name: ${NAME}-deploy
   annotations:
-    openshift.io/display-name: Static react js App Deploy Template
+    openshift.io/display-name: Static JS App Deploy Template
     description: A template to deploy your an App with a HTTP endpoint
     iconClass: icon-cube
     tags: http
@@ -75,6 +75,25 @@ objects:
     test: false
     triggers: []
 - apiVersion: v1
+  kind: ConfigMap
+  data:
+    env: |-
+      (function (window) {
+        window.__env = window.__env || {};
+
+        // API url
+        // { key: val, otherKey: otherVal}
+        // or some string?
+        window.__env.customEnv = ${CUSTOM_ENV}
+
+        // Whether or not to enable debug mode
+        // Setting this to false will disable console output
+        window.__env.enableDebug = ${ENABLE_DEBUG};
+      }(this));
+  metadata:
+    name: environment
+    namespace: { NAMESPACE }
+- apiVersion: v1
   kind: Service
   metadata:
     labels:
@@ -127,5 +146,13 @@ parameters:
   displayName: Project/Namespace for Jenkins Pipelines
   description: The project/namespace where the Jenkins executing pipelines is deployed.
   required: true
+- name: ENABLE_DEBUG
+  displayName: Set mode
+  description: Set mode for debugging on or off
+  value: "true"
+- name: CUSTOM_ENV
+  displayName: Custom Variables for app
+  description: Use to add variables to the app, eg endpoints
+  value: "{}"
 labels:
   template: ${NAME}-deploy-template

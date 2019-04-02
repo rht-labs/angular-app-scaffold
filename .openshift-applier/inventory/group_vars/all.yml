@@ -37,16 +37,6 @@ openshift_cluster_content:
         tags:
           - deploy
           - dev
-  - object: configmap-dev
-    content:
-      - name: environment-config
-        template: '{{ playbook_dir }}/templates/environment-config.yml'
-        params_from_vars: '{{ deploy.dev }}'
-        namespace: '{{ dev_namespace }}'
-        tags:
-          - configmap
-          - dev
-
   - object: deploy-test
     content:
       - name: '{{ app_name }}-{{ test_namespace }}-deploy'
@@ -55,13 +45,4 @@ openshift_cluster_content:
         namespace: '{{ test_namespace }}'
         tags:
           - deploy
-          - test
-  - object: configmap-test
-    content:
-      - name: environment-config
-        template: '{{ playbook_dir }}/templates/environment-config.yml'
-        params_from_vars: '{{ deploy.test }}'
-        namespace: '{{ test_namespace }}'
-        tags:
-          - configmap
           - test
