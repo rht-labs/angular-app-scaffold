@@ -13,5 +13,4 @@ const overRideConfig = {
 
 const thing = _.merge({}, protractorBase.config, overRideConfig)
 
-console.info("INFO ::::", thing)
 exports.config = thing

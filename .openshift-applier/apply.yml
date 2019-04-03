@@ -1,7 +1,8 @@
 ---
-- name: Build and Deploy tie-fe 
+- name: Build and Deploy angular-fe
   hosts: app
   vars:
+    company_name: companyxyz
     ci_cd_namespace: labs-ci-cd
     dev_namespace: labs-dev
     test_namespace: labs-test

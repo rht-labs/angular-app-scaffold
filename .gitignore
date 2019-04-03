@@ -6,6 +6,7 @@
 /out-tsc
 /reports
 junit.xml
+test-report.xml
 package-contents*
 
 # dependencies

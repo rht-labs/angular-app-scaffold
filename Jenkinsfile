@@ -8,7 +8,7 @@ pipeline {
     environment {
         // GLobal Vars
         PIPELINES_NAMESPACE = "labs-ci-cd"
-        APP_NAME = "tie-fe"
+        APP_NAME = "angular-fe"
 
         JENKINS_TAG = "${JOB_NAME}.${BUILD_NUMBER}".replace("/", "-")
         JOB_NAME = "${JOB_NAME}".replace("/", "-")
@@ -17,13 +17,14 @@ pipeline {
         GIT_CREDENTIALS = credentials('labs-ci-cd-jenkins-git-password')
         NEXUS_CREDS = credentials('labs-ci-cd-nexus-password')
 
-        // GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
+        GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
         GITLAB_PROJECT = "labs"
+        SONAR_SCANNER_HOME = tool "sonar-scanner-tool"
     }
 
     // The options directive is for configuration that applies to the whole job.
     options {
-        buildDiscarder(logRotator(numToKeepStr:'10'))
+        buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '1'))
         timeout(time: 15, unit: 'MINUTES')
         ansiColor('xterm')
         timestamps()
@@ -66,42 +67,37 @@ pipeline {
                 }
             }
         }
-        // stage("Apply cluster configs") {
-        //     agent {
-        //         node {
-        //             label "jenkins-slave-ansible"  
-        //         }
-        //     }
-        //     when {
-        //         expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
-        //     }
-        //     steps {
-        //         echo '### Apply cluster configs ###'
-        //         sh  '''
-        //                 printenv
-        //             '''
-        //         sh  '''
-        //                 cd .openshift-applier
-        //                 ansible-galaxy install -r requirements.yml --roles-path=roles
-        //                 ansible-playbook apply.yml -e target=app -i inventory/
-        //             '''
-        //     }
-        //     post {
-        //         always {
-        //             archiveArtifacts "**"
-        //         }
-        //     }
-        // }
+        stage("Apply cluster configs") {
+            agent {
+                node {
+                    label "jenkins-slave-ansible"
+                }
+            }
+            when {
+              expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
+            }
+            steps {
+                echo '### Apply cluster configs ###'
+                sh  '''
+                        printenv
+                    '''
+                sh  '''
+                        cd .openshift-applier
+                        ansible-galaxy install -r requirements.yml --roles-path=roles
+                        ansible-playbook apply.yml -e target=app -i inventory/
+                    '''
+            }
+        }
         stage("node-build") {
             agent {
                 node {
-                    label "jenkins-slave-npm"  
+                    label "jenkins-slave-npm"
                 }
             }
             steps {
                 // git branch: 'develop',
                 //     credentialsId: 'jenkins-git-creds',
-                //     url: 'https://gitlab-labs-ci-cd.apps.somedomain.com/labs/tie-fe.git'
+                //     url: 'https://gitlab-labs-ci-cd.apps.somedomain.com/labs/angular-fe.git'
                 sh 'printenv'
 
                 echo '### Install deps ###'
@@ -109,35 +105,76 @@ pipeline {
 
                 echo '### Install deps ###'
                 sh 'npm run clean'
-                
-                echo '### Running tests ###'
+
+                echo '### Running linter ###'
                 sh 'npm run lint'
 
                 echo '### Running tests ###'
                 sh 'npm run test:ci'
+                sh 'npm run e2e:ci'
 
+                // echo '### Running sonar scanner ###'
+                // script {
+                //     def scannerHome = tool 'sonar-scanner-tool';
+                //     withSonarQubeEnv('sonar') {
+                //         sh "${scannerHome}/bin/sonar-runner"
+                //      }
+                //  }
                 echo '### Running build ###'
-                // sh 'npm run build:ci:${NODE_ENV}'
-                sh 'npm run build:ci'
+                sh '''
+                    npm run build
+                '''
 
+                // echo '### Running pact tests ###'
+                // sh 'npm run pact:test'
+                // sh '''
+                //     if [ -z "${NODE_ENV}" ];then
+                //     echo "We are in feature branch, not publishing Pact contract"
+                //     else
+                //     npm run pact:publish
+                //     fi
+                // '''
+                // echo '### Checking of Pact Broker returns deployable for our versions ###'
+                // script {
+                //     try {
+                //         sh '''
+                //             if [ -z "${NODE_ENV}" ];then
+                //             echo "We are in feature branch, not verifying Pact contract"
+                //             else
+                //             npm run pact:verify
+                //             fi
+                //         '''
+                //     } catch (exc) {
+                //         echo 'Pact Contract not verified!'
+                //         currentBuild.result = 'UNSTABLE'
+                //     }
+                // }
                 echo '### Packaging App for Nexus ###'
                 sh 'npm run package'
                 sh 'npm run publish'
-                stash 'source'
             }
             // Post can be used both on individual stages and for the entire build.
             post {
                 always {
                     archiveArtifacts "**"
-                    junit 'reports/unit/results.xml'
+                    junit 'reports/unit/junit-report.xml'
                     // publish html
                     publishHTML target: [
                         allowMissing: false,
                         alwaysLinkToLastBuild: false,
                         keepAll: true,
-                        reportDir: 'reports/coverage',
+                        reportDir: 'reports/coverage/lcov-report',
                         reportFiles: 'index.html',
                         reportName: 'FE Code Coverage'
+                    ]
+                    junit 'reports/e2e/*.xml'
+                    publishHTML target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'reports/e2e',
+                        reportFiles: 'chrome-*.html,firefox-*.html',
+                        reportName: 'E2E Test Reports'
                     ]
                     // Notify slack or some such
                 }
@@ -147,11 +184,8 @@ pipeline {
                         git config --global user.email "jenkins@example.com"
                         git config --global user.name "jenkins-ci"
                         git tag -a ${JENKINS_TAG} -m "JENKINS automated commit"
-                        # git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@${GITLAB_DOMAIN}/${GITLAB_PROJECT}/${APP_NAME}.git --tags
+                        git push https://${GIT_CREDENTIALS_USR}:${GIT_CREDENTIALS_PSW}@${GITLAB_DOMAIN}/${GITLAB_PROJECT}/${APP_NAME}.git --tags
                     '''
-                }
-                failure {
-                    echo "FAILURE"
                 }
             }
         }
@@ -159,7 +193,7 @@ pipeline {
         stage("node-bake") {
             agent {
                 node {
-                    label "master"  
+                    label "master"
                 }
             }
             when {
@@ -179,17 +213,12 @@ pipeline {
                         oc start-build ${APP_NAME} --from-dir=package-contents/ --follow
                     '''
             }
-            post {
-                always {
-                    archiveArtifacts "**"
-                }
-            }
         }
 
         stage("node-deploy") {
             agent {
                 node {
-                    label "master"  
+                    label "master"
                 }
             }
             when {
@@ -207,46 +236,24 @@ pipeline {
                     oc rollout latest dc/${APP_NAME}
                 '''
                 echo '### Verify OCP Deployment ###'
-                openshiftVerifyDeployment depCfg: env.APP_NAME, 
-                    namespace: env.PROJECT_NAMESPACE, 
-                    replicaCount: '1', 
-                    verbose: 'false', 
-                    verifyReplicaCount: 'true', 
+                openshiftVerifyDeployment depCfg: env.APP_NAME,
+                    namespace: env.PROJECT_NAMESPACE,
+                    replicaCount: '1',
+                    verbose: 'false',
+                    verifyReplicaCount: 'true',
                     waitTime: '',
                     waitUnit: 'sec'
             }
-        }
-        stage("e2e test") {
-            agent {
-                node {
-                    label "jenkins-slave-npm"
+            post {
+                success {
+                    build job: 'system-test', parameters: [[$class: 'StringParameterValue', name: 'PROJECT_NAMESPACE', value: "${PROJECT_NAMESPACE}" ],[$class: 'StringParameterValue', name: 'JENKINS_TAG', value: "${JENKINS_TAG}"]], wait: false
                 }
             }
-            when {
-                expression { GIT_BRANCH ==~ /(.*master|.*develop)/ }
-            }
-            steps {
-              unstash 'source'
-
-              echo '### Install deps ###'
-              sh 'npm install'
-
-              echo '### Running end to end tests ###'
-              sh 'npm run e2e:ci'
-            }
-            post {
-                always {
-                    junit 'reports/e2e/results.xml'
-                    // publish html
-                    publishHTML target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: false,
-                        keepAll: true,
-                        reportDir: 'reports/e2e',
-                        reportFiles: 'e2e-test-report.html',
-                        reportName: 'FE Code Coverage'
-                    ]                }
-            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts "**"
         }
     }
 }

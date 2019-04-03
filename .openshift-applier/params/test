@@ -1,5 +1,0 @@
-PIPELINES_NAMESPACE=labs-ci-cd
-NAME=tie-fe
-DEPLOYER_USER=jenkins
-APP_TAG=latest
-NAMESPACE=labs-test

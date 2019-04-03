@@ -1,14 +1,17 @@
+import { Common } from './common/common.po';
 import { AppPage } from './app.po';
 
 describe('workspace-project App', () => {
   let page: AppPage;
+  let common: Common;
 
   beforeEach(() => {
     page = new AppPage();
+    common = new Common();
   });
 
   it('should display welcome message', () => {
-    page.navigateTo();
-    expect(page.getParagraphText()).toEqual('Welcome to tie-fe!');
+    common.navigateTo('/');
+    expect(page.getParagraphText()).toEqual('Welcome to Angular 7!');
   });
 });
