@@ -7,7 +7,7 @@ import { Utils } from 'src/app/utils/utils';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  title = 'Angular 7';
+  public title = 'Angular 7';
 
   constructor(public utils: Utils) {}
 

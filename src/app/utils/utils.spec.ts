@@ -1,8 +1,7 @@
-import { AppComponent } from './../app.component';
+import { AppComponent } from 'src/app/app.component';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Utils } from './utils';
-import { HomeComponent } from 'src/app/components/home/home.component';
 import { Location } from '@angular/common';
 
 describe('Utils', () => {

@@ -113,13 +113,13 @@ pipeline {
                 sh 'npm run test:ci'
                 sh 'npm run e2e:ci'
 
-                echo '### Running sonar scanner ###'
-                script {
-                    def scannerHome = tool 'sonar-scanner-tool';
-                    withSonarQubeEnv('sonar') {
-                        sh "${scannerHome}/bin/sonar-runner"
-                     }
-                 }
+                // echo '### Running sonar scanner ###'
+                // script {
+                //     def scannerHome = tool 'sonar-scanner-tool';
+                //     withSonarQubeEnv('sonar') {
+                //         sh "${scannerHome}/bin/sonar-runner"
+                //      }
+                //  }
                 echo '### Running build ###'
                 sh '''
                     npm run build
@@ -152,7 +152,6 @@ pipeline {
                 echo '### Packaging App for Nexus ###'
                 sh 'npm run package'
                 sh 'npm run publish'
-                stash 'source'
             }
             // Post can be used both on individual stages and for the entire build.
             post {

@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HeaderComponent } from './header/header/header.component';
+import { HeaderComponent } from './header/header.component';
+
+// This would be a good place to import angular forms, material UI stuff etc.
 
 @NgModule({
   declarations: [HeaderComponent],

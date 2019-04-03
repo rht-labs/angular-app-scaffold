@@ -4,8 +4,8 @@
   vars:
     company_name: companyxyz
     ci_cd_namespace: labs-ci-cd
-    dev_namespace: tom-dev
-    test_namespace: tom-test
+    dev_namespace: labs-dev
+    test_namespace: labs-test
   tasks:
     - include_role:
         name: openshift-applier/roles/openshift-applier

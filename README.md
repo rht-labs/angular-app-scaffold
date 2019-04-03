@@ -27,15 +27,15 @@ It is also possible, if your FE app is already running locally, to run `npm run 
 
 ### Bootstrap
 
-1. Run `npm install bootstrap@3 jquery --save`
+1. Run `npm install bootstrap jquery --save`
 
 1. This installs Bootstrap and jQuery into the node_modules folder within the project directory and makes sure that both dependencies are added to the package.json file as well.
 
-1. After both packages have been installed successfully the file paths can be added to the styles and scripts array in the file `.angular-cli.json`:
+1. After both packages have been installed successfully the file paths can be added to the styles and scripts array in the file `angular.json`:
 
 ```
 "styles": [
-    "styles.css",
+    "styles.scss",
     "./node_modules/bootstrap/dist/css/bootstrap.min.css"
   ],
 "scripts": [
@@ -48,7 +48,7 @@ It is also possible, if your FE app is already running locally, to run `npm run 
 
 1. Run `npm install --save @angular/material @angular/cdk`
 
-1. This installs Angular Material and Angular CDKinto the node_modules folder within the project directory and makes sure that both dependencies are added to the package.json file as well.
+1. This installs Angular Material and Angular CDK into the node_modules folder within the project directory and makes sure that both dependencies are added to the package.json file as well.
 
 1. Import the NgModule for each component you want to use:
 
