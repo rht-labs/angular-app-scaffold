@@ -17,7 +17,7 @@ pipeline {
         GIT_CREDENTIALS = credentials('labs-ci-cd-jenkins-git-password')
         NEXUS_CREDS = credentials('labs-ci-cd-nexus-password')
 
-        // GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
+        GITLAB_DOMAIN = "gitlab-labs-ci-cd.apps.somedomain.com"
         GITLAB_PROJECT = "labs"
         SONAR_SCANNER_HOME = tool "sonar-scanner-tool"
     }
