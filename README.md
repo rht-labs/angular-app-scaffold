@@ -2,6 +2,16 @@
 
 A (slightly) opinionated kick-starter Angular 7 app with baked in goodness such as testing, and ocp readiness
 
+## Getting started
+
+In order to get started, run the following command (replacing `<new-app-name>` with the new app name you want):
+
+```
+LC_CTYPE=C && LANG=C && find . -type f ! -regex '.*/\(node_modules\).*' ! -regex '.*/\(.git\).*' -exec sed -i '' 's/angular-fe/<new-app-name>/g' {} \;
+```
+
+Now create a git repo in your git store with the same name as your app and run `git remote set-url origin <git-url>` which will point this app to your new repo. Then run `git push -u origin master` to get started.
+
 ## App structure
 
 The app is set out to make development of components and modules easier. The following app structure applies:
@@ -142,3 +152,7 @@ export class PizzaPartyAppModule { }
 > Run `npm install --save @angular/animations`
 
 For further information see https://material.angular.io/guide/getting-started
+
+## Contributing to this repo
+
+If you find any bugs in this repo, feel free to contribute up or create an issue.
