@@ -14,7 +14,7 @@ src
 |   ├── modules
 |   ├── services
 |   ├── shared
-|   ├── utils
+|   └── utils
 └── assets
 ```
 
